@@ -1,6 +1,6 @@
-# AI Code Review TUI
+# Anchor
 
-An interactive terminal UI for reviewing code changes with line-level comments and AI feedback integration.
+My AI review tool for human-in-the-loop workflows
 
 ## Features
 

@@ -1,15 +1,16 @@
 """
 TUI for reviewing code diffs and adding comments
 """
-from textual.app import ComposeResult
-from textual.containers import Vertical, Horizontal
-from textual.events import Key
-from textual.widgets import Header, Footer, Static, Button, Input, Select, Label
-from textual.screen import Screen
-from textual.binding import Binding
-from rich.text import Text
 
-from review import CodeReview, FileDiff, Severity
+from rich.text import Text
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.containers import Horizontal, Vertical
+from textual.events import Key
+from textual.screen import Screen
+from textual.widgets import Button, Footer, Header, Input, Label, Select, Static
+
+from anchor.core import CodeReview, FileDiff, Severity
 
 
 class DiffViewer(Static):
@@ -157,11 +158,14 @@ class ReviewScreen(Screen):
         """Setup after mount"""
         self.comment_input.display = False
         self.render_diff_info()
+        self.focus()
 
     def render_diff_info(self):
         """Update the diff view"""
         display_lines = self.file_diff.get_display_lines()
-        change_lines = [line for line in display_lines if line["type"] in {"add", "remove"}]
+        change_lines = [
+            line for line in display_lines if line["type"] in {"add", "remove"}
+        ]
         if change_lines:
             self.current_line = change_lines[0]["line_number"]
             self.diff_viewer.selected_line = self.current_line
@@ -174,7 +178,14 @@ class ReviewScreen(Screen):
             return
 
         display_lines = self.file_diff.get_display_lines()
-        current = next((line for line in display_lines if line["line_number"] == self.current_line), None)
+        current = next(
+            (
+                line
+                for line in display_lines
+                if line["line_number"] == self.current_line
+            ),
+            None,
+        )
         if not current or current["type"] not in {"add", "remove"}:
             self.notify("Select a changed line first", severity="error")
             return
@@ -201,12 +212,18 @@ class ReviewScreen(Screen):
     def action_next_change(self):
         """Move to next change"""
         display_lines = self.file_diff.get_display_lines()
-        change_lines = [line for line in display_lines if line["type"] in {"add", "remove"}]
+        change_lines = [
+            line for line in display_lines if line["type"] in {"add", "remove"}
+        ]
         if not change_lines:
             return
 
         current_idx = next(
-            (i for i, line in enumerate(change_lines) if line["line_number"] == self.current_line),
+            (
+                i
+                for i, line in enumerate(change_lines)
+                if line["line_number"] == self.current_line
+            ),
             -1,
         )
 
@@ -218,12 +235,18 @@ class ReviewScreen(Screen):
     def action_prev_change(self):
         """Move to previous change"""
         display_lines = self.file_diff.get_display_lines()
-        change_lines = [line for line in display_lines if line["type"] in {"add", "remove"}]
+        change_lines = [
+            line for line in display_lines if line["type"] in {"add", "remove"}
+        ]
         if not change_lines:
             return
 
         current_idx = next(
-            (i for i, line in enumerate(change_lines) if line["line_number"] == self.current_line),
+            (
+                i
+                for i, line in enumerate(change_lines)
+                if line["line_number"] == self.current_line
+            ),
             -1,
         )
 
@@ -249,7 +272,14 @@ class ReviewScreen(Screen):
             return
 
         display_lines = self.file_diff.get_display_lines()
-        current = next((line for line in display_lines if line["line_number"] == self.current_line), None)
+        current = next(
+            (
+                line
+                for line in display_lines
+                if line["line_number"] == self.current_line
+            ),
+            None,
+        )
         if not current or current["type"] not in {"add", "remove"}:
             self.notify("Select a changed line first", severity="error")
             return
