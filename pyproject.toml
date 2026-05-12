@@ -1,25 +1,37 @@
 [project]
-name = "ai-code-review-tui"
+name = "anchor"
 version = "0.1.0"
-description = "Add your description here"
+description = "My AI review tool for human-in-the-loop workflows"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "pydantic>=2.13.4",
     "textual>=8.2.5",
+    "typer>=0.25.1",
 ]
 
 [dependency-groups]
 dev = [
     "ruff>=0.15.12",
 ]
+
+[project.scripts]
+anchor = "anchor.cli:app"
+
+[tool.uv]
+package = true
+
 [tool.ruff]
 line-length = 88
-select = ["E", "F", "I"]
+extend-exclude = ["*.ipynb"]
+target-version = "py312"
 
-[tool.ruff.isort]
+[tool.ruff.lint]
+select = ["E", "F", "I", "SIM"]
+
+[tool.ruff.lint.isort]
 combine-as-imports = true
-force-sort-within-sections = true
+lines-after-imports = 2
 
 [tool.ruff.format]
 preview = true
