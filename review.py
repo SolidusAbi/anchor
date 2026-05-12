@@ -6,10 +6,9 @@ from pathlib import Path
 from difflib import unified_diff
 from typing import List, Optional
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
-
-class Severity(str, Enum):
+class Severity(StrEnum):
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"
