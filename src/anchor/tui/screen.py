@@ -5,7 +5,6 @@ TUI for reviewing code diffs and adding comments
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
-from textual.events import Key
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Input, Label, Select
 
@@ -40,23 +39,22 @@ class ReviewScreen(Screen):
         self.filepath = filepath
         self.file_diff = review.files[filepath]
         self.current_line: int | None = None
-        self.showing_comment_input = False
+        self.comment_input: CommentInput | None = None
 
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical():
-            yield Label(f"📄 Reviewing: {self.filepath}")
+            yield Label(f"📄x Reviewing: {self.filepath}")
             self.diff_viewer = DiffViewer(self.file_diff)
             yield self.diff_viewer
 
-            self.comment_input = CommentInput(id="comment-input")
-            yield self.comment_input
+            self.comment_area = Vertical(id="comment-area")
+            yield self.comment_area
 
         yield Footer()
 
     def on_mount(self):
         """Setup after mount"""
-        self.comment_input.display = False
         self.render_diff_info()
         self.focus()
 
@@ -71,7 +69,7 @@ class ReviewScreen(Screen):
             self.diff_viewer.selected_line = self.current_line
         self.diff_viewer.render_diff()
 
-    def action_comment(self):
+    async def action_comment(self):
         """Start adding a comment"""
         if self.current_line is None:
             self.notify("Select a changed line first", severity="error")
@@ -90,19 +88,13 @@ class ReviewScreen(Screen):
             self.notify("Select a changed line first", severity="error")
             return
 
-        self.showing_comment_input = True
-        self.comment_input.display = True
-        self.comment_input.refresh()
-        self.comment_input.query_one("#comment-text", Input).focus()
+        if self.comment_input is None:
+            self.comment_input = CommentInput(id="comment-input")
+            await self.comment_area.mount(self.comment_input)
 
-    def on_key(self, event: Key) -> None:
-        """Ensure comment binding works regardless of focus or shift state"""
-        if self.showing_comment_input:
-            return
-
-        if event.key.lower() == "c" and not isinstance(self.app.focused, Input):
-            self.action_comment()
-            event.stop()
+        comment_text = self.comment_input.query_one("#comment-text", Input)
+        comment_text.value = ""
+        comment_text.focus()
 
     def action_save(self):
         """Save the review to REVIEW.md"""
@@ -159,16 +151,16 @@ class ReviewScreen(Screen):
         """Quit the application"""
         self.app.exit()
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses"""
         if event.button.id == "add-btn":
-            self.add_comment()
+            await self.add_comment()
         elif event.button.id == "cancel-btn":
-            self.cancel_comment()
+            await self.cancel_comment()
 
-    def add_comment(self):
+    async def add_comment(self):
         """Process comment addition"""
-        if self.current_line is None:
+        if self.current_line is None or self.comment_input is None:
             return
 
         display_lines = self.file_diff.get_display_lines()
@@ -196,12 +188,12 @@ class ReviewScreen(Screen):
             )
             self.notify(f"✅ Comment added to line {self.current_line}")
 
-        self.cancel_comment()
+        await self.cancel_comment()
 
-    def cancel_comment(self):
+    async def cancel_comment(self):
         """Cancel comment input"""
-        self.showing_comment_input = False
-        self.comment_input.display = False
-        self.comment_input.refresh()
-        self.comment_input.query_one("#comment-text", Input).value = ""
+        if self.comment_input is not None:
+            self.comment_input.query_one("#comment-text", Input).value = ""
+            await self.comment_input.remove()
+            self.comment_input = None
         self.diff_viewer.focus()
