@@ -25,6 +25,9 @@ class FileDiff:
     new_content: list[str]
     diff_hunks: list[str] = field(default_factory=list)
     comments: list[LineComment] = field(default_factory=list)
+    _display_lines_cache: list[dict] | None = field(
+        default=None, init=False, repr=False
+    )
 
     def __post_init__(self):
         self._generate_diff()
@@ -46,6 +49,9 @@ class FileDiff:
         Get lines for display in TUI with metadata.
         Returns list of dicts with: line_number, content, type (add/remove/context)
         """
+        if self._display_lines_cache is not None:
+            return self._display_lines_cache
+
         display = []
         current_line_num = 0
 
@@ -89,6 +95,7 @@ class FileDiff:
                 # Handle lines that don't have standard prefix
                 current_line_num += 1
 
+        self._display_lines_cache = display
         return display
 
     def add_comment(
