@@ -10,7 +10,7 @@ class LineComment:
     """A comment on a specific line"""
 
     line_number: int
-    original_text: str
+    line_content: str
     comment: str
     severity: Severity = Severity.INFO
     timestamp: datetime = field(default_factory=datetime.now)
@@ -24,7 +24,8 @@ class FileDiff:
     original_content: list[str]
     new_content: list[str]
     diff_hunks: list[str] = field(default_factory=list)
-    comments: list[LineComment] = field(default_factory=list)
+    # comments: list[LineComment] = field(default_factory=list)
+    comments: dict[int, LineComment] = field(default_factory=dict)
     _display_lines_cache: list[dict] | None = field(
         default=None, init=False, repr=False
     )
@@ -109,15 +110,21 @@ class FileDiff:
             if line["line_number"] == line_number:
                 line_content = line["content"]
                 break
-
-        self.comments.append(
-            LineComment(
-                line_number=line_number,
-                original_text=line_content,
-                comment=comment,
-                severity=severity,
-            )
-        )
+ 
+        self.comments[line_number] = LineComment(
+            line_number=line_number,
+            line_content=line_content,
+            comment=comment,
+            severity=severity,
+        ) 
+        # self.comments.append(
+        #     LineComment(
+        #         line_number=line_number,
+        #         line_content=line_content,
+        #         comment=comment,
+        #         severity=severity,
+        #     )
+        # )
 
     def to_markdown(self) -> str:
         """Convert review to markdown format"""

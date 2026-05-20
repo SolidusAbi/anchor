@@ -58,7 +58,7 @@ class DiffViewer(Static):
             content.append("\n" + "=" * 60 + "\n", style="dim")
             content.append("📝 Comments:\n", style="bold cyan")
 
-            for comment in self.file_diff.comments:
+            for comment in self.file_diff.comments.values():
                 content.append(f"  Line {comment.line_number}: ", style="bold")
                 content.append(f"{comment.comment}\n", style="dim")
 
