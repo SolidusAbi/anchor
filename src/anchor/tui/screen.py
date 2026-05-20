@@ -2,6 +2,7 @@
 TUI for reviewing code diffs and adding comments
 """
 
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
@@ -151,12 +152,34 @@ class ReviewScreen(Screen):
         """Quit the application"""
         self.app.exit()
 
-    async def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle button presses"""
-        if event.button.id == "add-btn":
-            await self.add_comment()
-        elif event.button.id == "cancel-btn":
-            await self.cancel_comment()
+    @on(CommentInput.Added)
+    async def add_comment2(self, message: CommentInput.Added):
+        """Handle comment added message"""
+        self.file_diff.add_comment(
+            line_number=self.current_line,
+            comment=message.comment,
+            severity=Severity(message.severity),
+        )
+        
+        self.notify(f"✅ Comment added to line {self.current_line}")
+        await self.cancel_comment()
+
+    # async def on_comment_input_comment_added(self, message: CommentInput.CommentAdded):
+    #     """Handle comment added message"""
+    #     self.file_diff.add_comment(
+    #         line_number=self.current_line,
+    #         comment=message.comment,
+    #         severity=message.severity,
+    #     )
+    #     self.notify(f"✅ Comment added to line {message.line_number}")
+    #     # self.render_diff_info()
+
+    # async def on_button_pressed(self, event: Button.Pressed) -> None:
+    #     """Handle button presses"""
+    #     if event.button.id == "add-btn":
+    #         await self.add_comment()
+    #     elif event.button.id == "cancel-btn":
+    #         await self.cancel_comment()
 
     async def add_comment(self):
         """Process comment addition"""
@@ -190,6 +213,7 @@ class ReviewScreen(Screen):
 
         await self.cancel_comment()
 
+    @on(CommentInput.Cancelled)
     async def cancel_comment(self):
         """Cancel comment input"""
         if self.comment_input is not None:

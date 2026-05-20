@@ -24,7 +24,6 @@ class FileDiff:
     original_content: list[str]
     new_content: list[str]
     diff_hunks: list[str] = field(default_factory=list)
-    # comments: list[LineComment] = field(default_factory=list)
     comments: dict[int, LineComment] = field(default_factory=dict)
     _display_lines_cache: list[dict] | None = field(
         default=None, init=False, repr=False
@@ -117,14 +116,6 @@ class FileDiff:
             comment=comment,
             severity=severity,
         ) 
-        # self.comments.append(
-        #     LineComment(
-        #         line_number=line_number,
-        #         line_content=line_content,
-        #         comment=comment,
-        #         severity=severity,
-        #     )
-        # )
 
     def to_markdown(self) -> str:
         """Convert review to markdown format"""
