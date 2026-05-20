@@ -7,7 +7,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Header, Input, Label, Select
+from textual.widgets import Footer, Header, Label, TextArea
 
 from anchor.core import CodeReview, Severity
 
@@ -92,9 +92,11 @@ class ReviewScreen(Screen):
         if self.comment_input is None:
             self.comment_input = CommentInput(id="comment-input")
             await self.comment_area.mount(self.comment_input)
+        else:
+            self.comment_input.styles.display = "block"
 
-        comment_text = self.comment_input.query_one("#comment-text", Input)
-        comment_text.value = ""
+        comment_text = self.comment_input.query_one("#comment-text", TextArea)
+        comment_text.text = ""
         comment_text.focus()
 
     def action_save(self):
@@ -161,7 +163,7 @@ class ReviewScreen(Screen):
             severity=Severity(message.severity),
         )
         
-        self.notify(f"✅ Comment added to line {self.current_line}")
+        self.notify(f"Comment added to line {self.current_line}")
         await self.cancel_comment()
 
     # async def on_comment_input_comment_added(self, message: CommentInput.CommentAdded):
@@ -181,43 +183,44 @@ class ReviewScreen(Screen):
     #     elif event.button.id == "cancel-btn":
     #         await self.cancel_comment()
 
-    async def add_comment(self):
-        """Process comment addition"""
-        if self.current_line is None or self.comment_input is None:
-            return
+    # async def add_comment(self):
+    #     """Process comment addition"""
+    #     if self.current_line is None or self.comment_input is None:
+    #         return
 
-        display_lines = self.file_diff.get_display_lines()
-        current = next(
-            (
-                line
-                for line in display_lines
-                if line["line_number"] == self.current_line
-            ),
-            None,
-        )
-        if not current or current["type"] not in {"add", "remove"}:
-            self.notify("Select a changed line first", severity="error")
-            return
+    #     display_lines = self.file_diff.get_display_lines()
+    #     current = next(
+    #         (
+    #             line
+    #             for line in display_lines
+    #             if line["line_number"] == self.current_line
+    #         ),
+    #         None,
+    #     )
+    #     if not current or current["type"] not in {"add", "remove"}:
+    #         self.notify("Select a changed line first", severity="error")
+    #         return
 
-        comment_text = self.comment_input.query_one("#comment-text", Input).value
-        severity_select = self.comment_input.query_one("#comment-severity", Select)
-        severity = Severity(severity_select.value)
+    #     comment_text = self.comment_input.query_one("#comment-text", TextArea).text
+    #     severity = Severity(self.comment_input.severity)
 
-        if comment_text:
-            self.file_diff.add_comment(
-                line_number=self.current_line,
-                comment=comment_text,
-                severity=severity,
-            )
-            self.notify(f"✅ Comment added to line {self.current_line}")
+    #     if comment_text:
+    #         self.file_diff.add_comment(
+    #             line_number=self.current_line,
+    #             comment=comment_text,
+    #             severity=severity,
+    #         )
+    #         self.notify(f"✅ Comment added to line {self.current_line}")
 
-        await self.cancel_comment()
+    #     await self.cancel_comment()
 
     @on(CommentInput.Cancelled)
     async def cancel_comment(self):
         """Cancel comment input"""
         if self.comment_input is not None:
-            self.comment_input.query_one("#comment-text", Input).value = ""
-            await self.comment_input.remove()
-            self.comment_input = None
+            comment_input = self.comment_input
+            text_area = comment_input.query_one("#comment-text", TextArea)
+            text_area.text = ""
+            text_area.blur()
+            comment_input.styles.display = "none"
         self.diff_viewer.focus()
