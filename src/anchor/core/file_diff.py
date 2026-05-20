@@ -124,12 +124,11 @@ class FileDiff:
 
         md = f"## File: {self.filepath}\n\n"
 
-        for comment in self.comments:
-            md += f"### Line {comment.line_number}"
-            if comment.original_text:
-                md += f" ({comment.original_text[:50]})"
-            md += "\n"
+        for comment in self.comments.values():
+            md += f"### Line {comment.line_number} \n"
             md += f"**Severity:** `{comment.severity.value}`\n"
+            if comment.line_content:
+                md += f"> {comment.line_content[:50]}\n"
             md += f"{comment.comment}\n\n"
 
         return md

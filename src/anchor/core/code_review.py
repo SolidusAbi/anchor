@@ -85,15 +85,15 @@ class CodeReview:
         # Summary statistics
         total_comments = sum(len(f.comments) for f in self.files.values())
         error_count = sum(
-            len([c for c in f.comments if c.severity == Severity.ERROR])
+            len([c for c in f.comments.values() if c.severity == Severity.ERROR])
             for f in self.files.values()
         )
         warning_count = sum(
-            len([c for c in f.comments if c.severity == Severity.WARNING])
+            len([c for c in f.comments.values() if c.severity == Severity.WARNING])
             for f in self.files.values()
         )
         info_count = sum(
-            len([c for c in f.comments if c.severity == Severity.INFO])
+            len([c for c in f.comments.values() if c.severity == Severity.INFO])
             for f in self.files.values()
         )
 
